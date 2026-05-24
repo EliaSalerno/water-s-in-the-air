@@ -1,6 +1,4 @@
----
 
-```markdown
 # 🗺️ Water's in the Air - Monitoraggio Climatologico
 
 Sistema di monitoraggio di temperatura, umidità e occupazione per aule scolastiche basato sull'ecosistema **Arduino + Raspberry Pi**.
@@ -115,7 +113,3 @@ La dashboard web è strutturata in due sezioni principali:
 | --- | --- | --- | --- |
 | **DHT11** | Temperatura e Umidità | **D2** | Sensore digitale ambientale |
 | **Sensore Prossimità** | Presenza / Occupazione | **D3** | Rilevamento studenti in aula |
-
-```
-
-```
