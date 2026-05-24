@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Water's in the Air - Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        h1 { font-size: 1.75rem; margin-bottom: 2rem; color: #38bdf8; display: flex; align-items: center; gap: 0.75rem; }
+        h1 small { font-size: 0.875rem; font-weight: 400; color: #94a3b8; }
+        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 2rem; }
+        .card { background: #1e293b; border-radius: 1rem; padding: 1.5rem; border: 1px solid #334155; transition: border-color 0.2s; }
+        .card:hover { border-color: #38bdf8; }
+        .card .label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; margin-bottom: 0.5rem; }
+        .card .value { font-size: 2rem; font-weight: 700; }
+        .card .value.temp { color: #f97316; }
+        .card .value.hum { color: #38bdf8; }
+        .card .value.occ-yes { color: #22c55e; }
+        .card .value.occ-no { color: #64748b; }
+        .chart-wrap { background: #1e293b; border-radius: 1rem; padding: 1.5rem; border: 1px solid #334155; margin-bottom: 2rem; }
+        .chart-wrap canvas { max-height: 350px; }
+        .table-wrap { background: #1e293b; border-radius: 1rem; padding: 1.5rem; border: 1px solid #334155; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+        th { text-align: left; padding: 0.75rem 0.5rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.75rem; border-bottom: 1px solid #334155; }
+        td { padding: 0.6rem 0.5rem; border-bottom: 1px solid #1e293b; }
+        tr:hover td { background: #1a2536; }
+        .badge { display: inline-block; padding: 0.15rem 0.6rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+        .badge-occupata { background: #22c55e22; color: #22c55e; border: 1px solid #22c55e44; }
+        .badge-libera { background: #64748b22; color: #64748b; border: 1px solid #64748b44; }
+        .last-update { text-align: right; font-size: 0.8rem; color: #64748b; margin-top: 0.5rem; }
+        .loading { text-align: center; padding: 3rem; color: #64748b; }
+        @media (max-width: 600px) { .container { padding: 1rem; } .card .value { font-size: 1.5rem; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>&#128168; Water's in the Air <small>Monitoraggio Climatologico</small></h1>
+
+        <div class="cards">
+            <div class="card">
+                <div class="label">Temperatura</div>
+                <div class="value temp" id="temp">--</div>
+            </div>
+            <div class="card">
+                <div class="label">Umidit&agrave;</div>
+                <div class="value hum" id="hum">--</div>
+            </div>
+            <div class="card">
+                <div class="label">Classe</div>
+                <div class="value" id="occupancy">--</div>
+            </div>
+            <div class="card">
+                <div class="label">Ultimo aggiornamento</div>
+                <div class="value" id="lastupdate" style="font-size:0.9rem; font-weight:400;">--</div>
+            </div>
+        </div>
+
+        <div class="chart-wrap">
+            <canvas id="chart"></canvas>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr><th>Data</th><th>Temperatura</th><th>Umidit&agrave;</th><th>Classe</th></tr>
+                </thead>
+                <tbody id="table-body">
+                </tbody>
+            </table>
+            <div class="last-update" id="update-label">In attesa dei dati&hellip;</div>
+        </div>
+    </div>
+
+    <script>
+        let chart;
+
+        function initChart(labels, temps, hums) {
+            const ctx = document.getElementById('chart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Temperatura (°C)',
+                            data: temps,
+                            borderColor: '#f97316',
+                            backgroundColor: '#f9731622',
+                            yAxisID: 'y',
+                            tension: 0.3,
+                            fill: true,
+                        },
+                        {
+                            label: 'Umidità (%)',
+                            data: hums,
+                            borderColor: '#38bdf8',
+                            backgroundColor: '#38bdf822',
+                            yAxisID: 'y1',
+                            tension: 0.3,
+                            fill: true,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: { legend: { labels: { color: '#94a3b8' } } },
+                    scales: {
+                        x: { ticks: { color: '#64748b', maxTicksLimit: 10 }, grid: { color: '#334155' } },
+                        y: { type: 'linear', display: true, position: 'left', ticks: { color: '#f97316' }, grid: { color: '#334155' }, title: { display: true, text: '°C', color: '#f97316' } },
+                        y1: { type: 'linear', display: true, position: 'right', ticks: { color: '#38bdf8' }, grid: { drawOnChartArea: false }, title: { display: true, text: '%', color: '#38bdf8' } }
+                    }
+                }
+            });
+        }
+
+        function updateDashboard() {
+            fetch('/api/latest')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.temperature !== null) {
+                        document.getElementById('temp').textContent = data.temperature + ' °C';
+                        document.getElementById('hum').textContent = data.humidity + ' %';
+                        const occEl = document.getElementById('occupancy');
+                        if (data.classroomOccupied) {
+                            occEl.innerHTML = '<span class="badge badge-occupata">Occupata</span>';
+                            occEl.className = 'value occ-yes';
+                        } else {
+                            occEl.innerHTML = '<span class="badge badge-libera">Libera</span>';
+                            occEl.className = 'value occ-no';
+                        }
+                        document.getElementById('lastupdate').textContent = data.timestamp ? new Date(data.timestamp).toLocaleString('it-IT') : '--';
+                    }
+                })
+                .catch(() => {});
+
+            fetch('/api/data')
+                .then(r => r.json())
+                .then(data => {
+                    const tbody = document.getElementById('table-body');
+                    const recent = data.slice(-20).reverse();
+                    tbody.innerHTML = recent.map(d => {
+                        const occ = d.classroomOccupied
+                            ? '<span class="badge badge-occupata">Occupata</span>'
+                            : '<span class="badge badge-libera">Libera</span>';
+                        return `<tr><td>${new Date(d.timestamp).toLocaleString('it-IT')}</td><td>${d.temperature} °C</td><td>${d.humidity} %</td><td>${occ}</td></tr>`;
+                    }).join('');
+                    document.getElementById('update-label').textContent = 'Dati storici: ' + data.length + ' campioni';
+
+                    if (data.length > 1) {
+                        const labels = data.map(d => new Date(d.timestamp).toLocaleString('it-IT'));
+                        const temps = data.map(d => d.temperature);
+                        const hums = data.map(d => d.humidity);
+                        if (chart) {
+                            chart.data.labels = labels;
+                            chart.data.datasets[0].data = temps;
+                            chart.data.datasets[1].data = hums;
+                            chart.update();
+                        } else {
+                            initChart(labels, temps, hums);
+                        }
+                    }
+                })
+                .catch(() => {});
+        }
+
+        updateDashboard();
+        setInterval(updateDashboard, 10000);
+    </script>
+</body>
+</html>
