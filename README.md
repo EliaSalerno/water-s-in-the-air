@@ -1,51 +1,43 @@
-# Monitoraggio Ambientale Smart
+# Water's in the Air - Monitoraggio Climatologico
 
-Dashboard per il monitoraggio ambientale con visualizzazione di dati relativi a qualità dell'aria, consumo idrico ed energia.
+Sistema di monitoraggio di temperatura e umidit&agrave; per aule scolastiche basato su **Arduino + Raspberry Pi**.
 
-## Struttura del progetto
+## Struttura del Progetto
 
 ```
 pr_water_s_in_the_air/
-├── .git/                   # Repository Git
-├── img/                    # Immagini e risorse statiche
-│   └── Monitoraggio_Ambientale_Smart.png
-├── template/               # Applicazione frontend
-│   ├── public/             # Asset pubblici
-│   ├── src/
-│   │   ├── app/
-│   │   │   ├── components/ # Componenti React riutilizzabili
-│   │   │   ├── types.ts    # TypeScript type definitions
-│   │   │   └── utils/      # Funzioni di utilità
-│   │   ├── styles/         # Fogli di stile (globals, tailwind, theme, fonts)
-│   │   └── main.tsx        # Entry point dell'applicazione
-│   ├── guidelines/         # Linee guida del progetto
-│   ├── ATTRIBUTIONS.md     # Attribuzioni (shadcn/ui, Unsplash)
-│   ├── default_shadcn_theme.css
-│   ├── index.html          # HTML principale
-│   ├── package.json        # Dipendenze e script
-│   ├── pnpm-workspace.yaml
-│   ├── postcss.config.mjs
-│   └── vite.config.ts      # Configurazione Vite
-└── README.md
+│   app.py              (Flask Web App + logica acquisizione)
+│   data.json           (Dati storici per il frontend)
+│   data.csv            (Tabella per Excel)
+│   README.md
+├───arduino/
+│       sketch.ino      (Sketch per Arduino)
+├───templates/
+│       index.html      (Dashboard web)
+│       img/            (Immagini per il sito)
+└───template_old/       (Template di riferimento frontend)
 ```
 
-## Tecnologie
+## Come Funziona
 
-- **React 18** + **TypeScript**
-- **Vite** come bundler
-- **Tailwind CSS 4** per lo styling
-- **Material UI (MUI)** e **Radix UI** per componenti UI
-- **Recharts** per grafici
-- **React Router** per navigazione
-- **PapaParse** per parsing CSV
+1. **Arduino** (pin D2 = DHT11, pin D3 = sensore prossimit&agrave;) invia pacchetti binari via USB.
+2. **Raspberry Pi** esegue `app.py` che:
+   - Legge i dati dalla porta seriale
+   - Li salva ogni **10 minuti** (7:30-17:00) o **30 minuti** (17:00-7:30) in JSON e CSV
+   - Serve una dashboard web sulla porta **5000**
 
 ## Esecuzione
 
 ```bash
-cd template
-npm install
-npm run dev
+pip install flask pyserial
+python app.py
 ```
 
-Il progetto è basato su un design Figma: [Data Visualization Dashboard](https://www.figma.com/design/LD9XAT0MEcmMLYSOlZ3nUN/Data-Visualization-Dashboard).
-  
+Aprire il browser su `http://<ip-raspberry>:5000`.
+
+## Hardware
+
+| Componente          | Pin Arduino |
+|---------------------|-------------|
+| DHT11               | D2          |
+| Sensore prossimit&agrave; | D3    |
