@@ -1,11 +1,11 @@
 
-# 🗺️ Water's in the Air - Monitoraggio Climatologico
+#  Water's in the Air - Monitoraggio Climatologico
 
 Sistema di monitoraggio di temperatura, umidità e occupazione per aule scolastiche basato sull'ecosistema **Arduino + Raspberry Pi**.
 
 ---
 
-## 🧭 Struttura del Progetto
+##  Struttura del Progetto
 
 ```text
 pr_water_s_in_the_air/
@@ -28,7 +28,7 @@ pr_water_s_in_the_air/
 
 ---
 
-## ⚡ Come Funziona
+##  Come Funziona
 
 1. **Hardware (Arduino)**: Rileva i dati ambientali (Pin `D2` per DHT11 e Pin `D3` per il sensore di prossimità) e invia pacchetti binari strutturati via USB (Seriale).
 2. **Server (Raspberry Pi)**: Esegue lo script `app.py` che si occupa di:
@@ -44,7 +44,7 @@ pr_water_s_in_the_air/
 
 ---
 
-## 🔌 Installazione ed Esecuzione
+##  Installazione ed Esecuzione
 
 ### 1. Installazione delle dipendenze
 
@@ -66,7 +66,7 @@ Una volta avviato, apri il browser e naviga all'indirizzo: `http://<ip-raspberry
 
 ---
 
-## 🎛️ Configurazione Porta Seriale
+##  Configurazione Porta Seriale
 
 Il sistema gestisce la comunicazione seriale in modo flessibile. È possibile forzare i parametri tramite **variabili d'ambiente**:
 
@@ -82,22 +82,22 @@ python app.py
 
 ```
 
-> 👁️‍🗨️ **Fallback Automatico:** Se non viene specificata alcuna variabile d'ambiente, lo script tenterà automaticamente di connettersi a una delle seguenti porte di default: `/dev/ttyACM0`, `/dev/ttyUSB0`, oppure `COM3` (Windows).
+>  **Fallback Automatico:** Se non viene specificata alcuna variabile d'ambiente, lo script tenterà automaticamente di connettersi a una delle seguenti porte di default: `/dev/ttyACM0`, `/dev/ttyUSB0`, oppure `COM3` (Windows).
 
 ---
 
-## 🖥️ Funzionalità Frontend
+##  Funzionalità Frontend
 
 La dashboard web è strutturata in due sezioni principali:
 
-### ⏱️ Dashboard (Dati Live)
+###  Dashboard (Dati Live)
 
 * **Cards riassuntive**: Monitoraggio in tempo reale di temperatura, umidità e stato di occupazione della classe.
 * **Grafico combinato**: Visualizzazione di temperatura e umidità su un grafico a doppio asse Y.
 * **Tabella Real-time**: Elenco delle ultime 20 letture effettuate.
 * **Auto-refresh**: Aggiornamento automatico dei dati della pagina ogni 10 secondi.
 
-### 🔍 Analisi (Dati Storici)
+###  Analisi (Dati Storici)
 
 * **Soglie limite**: Configurazione personalizzata dei range ideali di temperatura e umidità per evidenziare anomalie (le impostazioni vengono salvate localmente nel browser).
 * **Filtri avanzati**: Filtraggio dei dati storici per data, ora, temperatura e umidità.
@@ -107,7 +107,7 @@ La dashboard web è strutturata in due sezioni principali:
 
 ---
 
-## 💾 Specifiche Hardware
+##  Specifiche Hardware
 
 | Componente | Tipo Sensore | Pin Arduino | Note |
 | --- | --- | --- | --- |
