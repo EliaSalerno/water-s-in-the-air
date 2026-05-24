@@ -13,6 +13,8 @@ struct SensorPacket {
   unsigned long timestamp;
 };
 
+static_assert(sizeof(SensorPacket) == 16, "SensorPacket size mismatch - check struct alignment");
+
 void setup() {
   Serial.begin(9600);
   dht.begin();

@@ -35,6 +35,39 @@ python app.py
 
 Aprire il browser su `http://<ip-raspberry>:5000`.
 
+## Configurazione Porta Seriale
+
+La porta seriale &egrave; configurabile tramite variabile d'ambiente `SERIAL_PORT`:
+
+```bash
+# Porta specifica
+export SERIAL_PORT=/dev/ttyACM0
+python app.py
+
+# Baud rate personalizzato (default: 9600)
+export BAUD_RATE=115200
+python app.py
+```
+
+Se la variabile non viene impostata, il sistema prova automaticamente: `/dev/ttyACM0`, `/dev/ttyUSB0`, `COM3`.
+
+## Funzionalit&agrave; Frontend
+
+La dashboard web ha due tab:
+
+### Dashboard (Live)
+- Cards riassuntive: temperatura, umidit&agrave;, stato occupazione classe
+- Grafico combinato temperatura + umidit&agrave; (doppio asse Y)
+- Tabella ultime 20 letture
+- Aggiornamento automatico ogni 10 secondi
+
+### Analisi (Dati Storici)
+- **Soglie limite**: configurazione dei range di temperatura e umidit&agrave; per evidenziare allarmi (salvate nel browser)
+- **Filtri**: filtro per data, ora, temperatura e umidit&agrave;
+- **Grafici**: temperatura nel tempo, umidit&agrave; nel tempo, grafico combinato
+- **Tabella**: dati filtrati con righe fuori soglia evidenziate in rosso e indicatore di allarme
+- **Esportazione CSV**: scarica i dati filtrati in formato CSV
+
 ## Hardware
 
 | Componente          | Pin Arduino |
