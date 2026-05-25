@@ -112,3 +112,70 @@ La dashboard web è strutturata in due sezioni principali:
 | Componente | Tipo Sensore | Pin Arduino | Note |
 | --- | --- | --- | --- |
 | **DHT11** | Temperatura e Umidità | **D2** | Sensore digitale ambientale |
+
+---
+
+## Nuovo aggiornamento — DHT11 diretto su Raspberry Pi
+
+Il progetto è stato revisionato: ora il DHT11 si collega direttamente al **GPIO del Raspberry Pi** eliminando la scheda Arduino.
+
+### Struttura aggiornata (`repo_dht11_rasp/`)
+
+```text
+repo_dht11_rasp/
+├── app.py                 # Flask + lettura DHT11 + scheduler
+├── requirements.txt       # Dipendenze Python
+├── plan.md                # Piano di lavoro
+├── link.md                # Documentazione e riferimenti utili
+└── templates/
+    ├── index.html         # Dashboard web (Chart.js)
+    └── data/
+        ├── dht_readings.json   # Storico JSON
+        └── dht_readings.csv    # Storico CSV
+```
+
+### Novità
+
+- **Niente più Arduino**: il DHT11 è collegato direttamente al GPIO4 del Raspberry Pi.
+- **Libreria**: `adafruit-circuitpython-dht` invece di `pyserial`.
+- **Modalità simulazione**: variabile d'ambiente `DHT_SIMULATE=1` per test su PC senza sensore.
+- **Durata 48h**: la raccolta dati si interrompe dopo 48 ore, il server web resta attivo.
+- **Dati in `templates/data/`**: JSON e CSV separati dal vecchio progetto.
+
+### Installazione nuove dipendenze
+
+```bash
+cd repo_dht11_rasp
+pip install -r requirements.txt
+sudo apt-get install libgpiod2
+```
+
+### Collegamento DHT11 ↔ Raspberry Pi
+
+| Sensore | Pin Raspberry Pi |
+|---------|-----------------|
+| DATA    | GPIO4 (pin 7)   |
+| VCC     | 3.3V o 5V       |
+| GND     | GND (pin 6)     |
+
+### Avvio
+
+```bash
+cd repo_dht11_rasp
+python app.py
+```
+
+Per test con dati simulati:
+
+```bash
+DHT_SIMULATE=1 python app.py      # Linux/Mac
+$env:DHT_SIMULATE=1; python app.py # Windows PowerShell
+```
+
+### API Endpoint
+
+| Route | Output |
+|-------|--------|
+| `/api/latest` | Ultima lettura: `{"temperature": ..., "humidity": ..., "timestamp": "..."}` |
+| `/api/data` | Array JSON completo |
+| `/api/export` | CSV scaricabile |
