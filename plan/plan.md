@@ -4,7 +4,6 @@ Ecco un piano di lavoro dettagliato per la seconda IA, strutturato per risponder
 L'IA dovrà scrivere lo sketch (C++) per Arduino impostando la seguente configurazione dei pin (standard consigliati per questo tipo di sensori):
 
 *   **Pin Digitale 2:** Sensore di temperatura e umidità **DHT11**.
-*   **Pin Digitale 3:** Sensore di **prossimità** (per rilevare se la classe è "in uso").
 *   **Comunicazione Serial (USB):** Invio dei dati al Raspberry Pi tramite protocollo binario (usando `struct` lato Python).
 
 ### 2. Architettura Software Python

@@ -27,8 +27,7 @@
         .card .value { font-size: 2rem; font-weight: 700; }
         .card .value.temp { color: #f97316; }
         .card .value.hum { color: #38bdf8; }
-        .card .value.occ-yes { color: #22c55e; }
-        .card .value.occ-no { color: #64748b; }
+
         .chart-wrap { background: #1e293b; border-radius: 1rem; padding: 1.5rem; border: 1px solid #334155; margin-bottom: 2rem; }
         .chart-wrap canvas { max-height: 350px; }
 
@@ -74,8 +73,6 @@
         td.alert-val { color: #ef4444; font-weight: 600; }
 
         .badge { display: inline-block; padding: 0.15rem 0.6rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
-        .badge-occupata { background: #22c55e22; color: #22c55e; border: 1px solid #22c55e44; }
-        .badge-libera { background: #64748b22; color: #64748b; border: 1px solid #64748b44; }
         .badge-ok { background: #22c55e22; color: #22c55e; border: 1px solid #22c55e44; }
         .badge-alert { background: #ef444422; color: #ef4444; border: 1px solid #ef444444; }
 
@@ -116,10 +113,6 @@
                     <div class="value hum" id="hum">--</div>
                 </div>
                 <div class="card">
-                    <div class="label">Classe</div>
-                    <div class="value" id="occupancy">--</div>
-                </div>
-                <div class="card">
                     <div class="label">Ultimo aggiornamento</div>
                     <div class="value" id="lastupdate" style="font-size:0.9rem; font-weight:400;">--</div>
                 </div>
@@ -136,7 +129,7 @@
                 <div class="table-wrap">
                     <table>
                         <thead>
-                            <tr><th>Data</th><th>Temperatura</th><th>Umidit&agrave;</th><th>Classe</th></tr>
+                            <tr><th>Data</th><th>Temperatura</th><th>Umidit&agrave;</th></tr>
                         </thead>
                         <tbody id="table-body-dash"></tbody>
                     </table>
@@ -241,7 +234,7 @@
                 <div class="table-wrap">
                     <table>
                         <thead>
-                            <tr><th>Data</th><th>Ora</th><th>Temperatura</th><th>Umidit&agrave;</th><th>Classe</th><th>Stato</th></tr>
+                            <tr><th>Data</th><th>Ora</th><th>Temperatura</th><th>Umidit&agrave;</th><th>Stato</th></tr>
                         </thead>
                         <tbody id="table-body-analisi"></tbody>
                     </table>
@@ -389,16 +382,13 @@
         function renderAnalisiTable(data, limits) {
             const tbody = document.getElementById('table-body-analisi');
             if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#64748b;padding:2rem;">Nessun dato corrisponde ai filtri</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#64748b;padding:2rem;">Nessun dato corrisponde ai filtri</td></tr>';
                 return;
             }
             tbody.innerHTML = data.map(d => {
                 const tempAlert = isOutOfRange(d.temperature, limits.tempMin, limits.tempMax);
                 const humAlert = isOutOfRange(d.humidity, limits.humMin, limits.humMax);
                 const hasAlert = tempAlert || humAlert;
-                const occ = d.classroomOccupied
-                    ? '<span class="badge badge-occupata">Occupata</span>'
-                    : '<span class="badge badge-libera">Libera</span>';
                 const stato = hasAlert
                     ? '<span class="badge badge-alert">&#9888; Allarme</span>'
                     : '<span class="badge badge-ok">&#10003; OK</span>';
@@ -407,7 +397,6 @@
                     <td>${formatTime(d.timestamp)}</td>
                     <td class="${tempAlert ? 'alert-val' : ''}">${d.temperature} °C</td>
                     <td class="${humAlert ? 'alert-val' : ''}">${d.humidity} %</td>
-                    <td>${occ}</td>
                     <td>${stato}</td>
                 </tr>`;
             }).join('');
@@ -564,11 +553,11 @@
 
             if (filtered.length === 0) return;
 
-            const header = 'data,ora,temperatura,umidita,classe_occupata';
+            const header = 'data,ora,temperatura,umidita';
             const rows = filtered.map(d => {
                 const dd = formatDate(d.timestamp);
                 const tt = formatTime(d.timestamp);
-                return `${dd},${tt},${d.temperature},${d.humidity},${d.classroomOccupied ? 'Occupata' : 'Libera'}`;
+                return `${dd},${tt},${d.temperature},${d.humidity}`;
             });
             const csv = header + '\n' + rows.join('\n');
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -629,14 +618,6 @@
                     if (data.temperature !== null) {
                         document.getElementById('temp').textContent = data.temperature + ' °C';
                         document.getElementById('hum').textContent = data.humidity + ' %';
-                        const occEl = document.getElementById('occupancy');
-                        if (data.classroomOccupied) {
-                            occEl.innerHTML = '<span class="badge badge-occupata">Occupata</span>';
-                            occEl.className = 'value occ-yes';
-                        } else {
-                            occEl.innerHTML = '<span class="badge badge-libera">Libera</span>';
-                            occEl.className = 'value occ-no';
-                        }
                         document.getElementById('lastupdate').textContent = data.timestamp ? new Date(data.timestamp).toLocaleString('it-IT') : '--';
                     }
                 })
@@ -649,10 +630,7 @@
                     const tbody = document.getElementById('table-body-dash');
                     const recent = data.slice(-20).reverse();
                     tbody.innerHTML = recent.map(d => {
-                        const occ = d.classroomOccupied
-                            ? '<span class="badge badge-occupata">Occupata</span>'
-                            : '<span class="badge badge-libera">Libera</span>';
-                        return `<tr><td>${formatDateTime(d.timestamp)}</td><td>${d.temperature} °C</td><td>${d.humidity} %</td><td>${occ}</td></tr>`;
+                        return `<tr><td>${formatDateTime(d.timestamp)}</td><td>${d.temperature} °C</td><td>${d.humidity} %</td></tr>`;
                     }).join('');
                     document.getElementById('update-label-dash').textContent = 'Dati storici: ' + data.length + ' campioni';
 

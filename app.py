@@ -19,13 +19,12 @@ CSV_PATH = DATA_DIR / "data.csv"
 SERIAL_PORT = os.getenv("SERIAL_PORT", "/dev/ttyACM0")
 BAUD_RATE = int(os.getenv("BAUD_RATE", "9600"))
 
-SENSOR_FORMAT = struct.Struct("<ff?3xI")
+SENSOR_FORMAT = struct.Struct("<ffI")
 SENSOR_SIZE = SENSOR_FORMAT.size
 
 latest_data = {
     "temperature": None,
     "humidity": None,
-    "classroomOccupied": None,
     "timestamp": None,
 }
 
@@ -44,12 +43,12 @@ def init_csv():
     if not CSV_PATH.exists():
         with open(CSV_PATH, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
-            writer.writerow(["timestamp", "temperature", "humidity", "classroom_occupied"])
+            writer.writerow(["timestamp", "temperature", "humidity"])
 
-def append_csv(timestamp, temperature, humidity, occupied):
+def append_csv(timestamp, temperature, humidity):
     with open(CSV_PATH, "a", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
-        writer.writerow([timestamp, temperature, humidity, occupied])
+        writer.writerow([timestamp, temperature, humidity])
 
 def append_json(entry):
     if JSON_PATH.exists():
@@ -101,14 +100,13 @@ def read_loop():
                     packet = buffer[:SENSOR_SIZE]
                     buffer = buffer[SENSOR_SIZE:]
 
-                    temperature, humidity, occupied, ts = SENSOR_FORMAT.unpack(packet)
+                    temperature, humidity, ts = SENSOR_FORMAT.unpack(packet)
 
                     now_ts = time.time()
                     interval = get_sampling_interval()
 
                     latest_data["temperature"] = round(temperature, 1)
                     latest_data["humidity"] = round(humidity, 1)
-                    latest_data["classroomOccupied"] = bool(occupied)
                     latest_data["timestamp"] = datetime.fromtimestamp(now_ts).isoformat()
 
                     if now_ts - last_sample >= interval:
@@ -118,11 +116,10 @@ def read_loop():
                             "timestamp": dt_str,
                             "temperature": round(temperature, 1),
                             "humidity": round(humidity, 1),
-                            "classroomOccupied": bool(occupied),
                             "arduino_tick": ts,
                         }
                         append_json(entry)
-                        append_csv(dt_str, round(temperature, 1), round(humidity, 1), bool(occupied))
+                        append_csv(dt_str, round(temperature, 1), round(humidity, 1))
                         print(f"Saved: {entry}")
 
             except serial.SerialException:

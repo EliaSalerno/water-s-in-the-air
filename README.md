@@ -1,7 +1,7 @@
 
 #  Water's in the Air - Monitoraggio Climatologico
 
-Sistema di monitoraggio di temperatura, umidità e occupazione per aule scolastiche basato sull'ecosistema **Arduino + Raspberry Pi**.
+Sistema di monitoraggio di temperatura e umidità per aule scolastiche basato sull'ecosistema **Arduino + Raspberry Pi**.
 
 ---
 
@@ -30,7 +30,7 @@ pr_water_s_in_the_air/
 
 ##  Come Funziona
 
-1. **Hardware (Arduino)**: Rileva i dati ambientali (Pin `D2` per DHT11 e Pin `D3` per il sensore di prossimità) e invia pacchetti binari strutturati via USB (Seriale).
+1. **Hardware (Arduino)**: Rileva i dati ambientali (Pin `D2` per DHT11) e invia pacchetti binari strutturati via USB (Seriale).
 2. **Server (Raspberry Pi)**: Esegue lo script `app.py` che si occupa di:
 * Leggere e decodificare i dati dalla porta seriale.
 * Salvare i record storici in formato JSON e CSV con campionamento intelligente:
@@ -92,7 +92,7 @@ La dashboard web è strutturata in due sezioni principali:
 
 ###  Dashboard (Dati Live)
 
-* **Cards riassuntive**: Monitoraggio in tempo reale di temperatura, umidità e stato di occupazione della classe.
+* **Cards riassuntive**: Monitoraggio in tempo reale di temperatura e umidità.
 * **Grafico combinato**: Visualizzazione di temperatura e umidità su un grafico a doppio asse Y.
 * **Tabella Real-time**: Elenco delle ultime 20 letture effettuate.
 * **Auto-refresh**: Aggiornamento automatico dei dati della pagina ogni 10 secondi.
@@ -112,4 +112,3 @@ La dashboard web è strutturata in due sezioni principali:
 | Componente | Tipo Sensore | Pin Arduino | Note |
 | --- | --- | --- | --- |
 | **DHT11** | Temperatura e Umidità | **D2** | Sensore digitale ambientale |
-| **Sensore Prossimità** | Presenza / Occupazione | **D3** | Rilevamento studenti in aula |

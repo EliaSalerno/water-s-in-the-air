@@ -21,7 +21,7 @@
 **Obiettivo:** Unire monitoring live + analisi dati stile template_old in un unico file vanilla (no build step)
 
 **Tab Dashboard (live):**
-- Cards riassuntive (temp, umidità, occupazione, ultimo aggiornamento)
+- Cards riassuntive (temp, umidità, ultimo aggiornamento)
 - Grafico combinato temperatura + umidità (Chart.js, doppio asse Y)
 - Tabella con ultime 20 letture in ordine inverso
 - Auto-refresh ogni 10 secondi
@@ -40,7 +40,7 @@
 
 ### 3. `arduino/sketch.ino` — Sketch Arduino
 - Aggiunto `static_assert(sizeof(SensorPacket) == 16, ...)` per verificare a compile-time che l'allineamento della struct corrisponda al formato Python `"<ff?3xI"`
-- Pin: D2 (DHT11), D3 (prossimità)
+- Pin: D2 (DHT11)
 
 ### 4. `README.md`
 - Sezione "Configurazione Porta Seriale" (env vars)
@@ -63,9 +63,7 @@ Arduino ──USB──→ app.py (pyserial) ──→ data.json (storico JSON)
 ```
 offset 0: float temperature     (4 byte)
 offset 4: float humidity        (4 byte)
-offset 8: bool classroomOccupied (1 byte)
-offset 9: padding               (3 byte, allineamento)
-offset 12: unsigned long timestamp (4 byte)
+offset 8: unsigned long timestamp (4 byte)
 ```
 
 **Campionamento:**

@@ -20,7 +20,7 @@ pr_water_s_in_the_air/
 
 ## Come Funziona
 
-1. **Arduino** (pin D2 = DHT11, pin D3 = sensore prossimit&agrave;) invia pacchetti binari via USB.
+1. **Arduino** (pin D2 = DHT11) invia pacchetti binari via USB.
 2. **Raspberry Pi** esegue `app.py` che:
    - Legge i dati dalla porta seriale
    - Li salva ogni **10 minuti** (7:30-17:00) o **30 minuti** (17:00-7:30) in JSON e CSV
@@ -56,7 +56,7 @@ Se la variabile non viene impostata, il sistema prova automaticamente: `/dev/tty
 La dashboard web ha due tab:
 
 ### Dashboard (Live)
-- Cards riassuntive: temperatura, umidit&agrave;, stato occupazione classe
+- Cards riassuntive: temperatura, umidit&agrave;
 - Grafico combinato temperatura + umidit&agrave; (doppio asse Y)
 - Tabella ultime 20 letture
 - Aggiornamento automatico ogni 10 secondi
@@ -73,4 +73,3 @@ La dashboard web ha due tab:
 | Componente          | Pin Arduino |
 |---------------------|-------------|
 | DHT11               | D2          |
-| Sensore prossimit&agrave; | D3    |

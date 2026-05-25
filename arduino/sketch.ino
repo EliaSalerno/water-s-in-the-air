@@ -2,23 +2,19 @@
 
 #define DHTPIN 2
 #define DHTTYPE DHT11
-#define PROXIMITY_PIN 3
-
 DHT dht(DHTPIN, DHTTYPE);
 
 struct SensorPacket {
   float temperature;
   float humidity;
-  bool classroomOccupied;
   unsigned long timestamp;
 };
 
-static_assert(sizeof(SensorPacket) == 16, "SensorPacket size mismatch - check struct alignment");
+static_assert(sizeof(SensorPacket) == 12, "SensorPacket size mismatch - check struct alignment");
 
 void setup() {
   Serial.begin(9600);
   dht.begin();
-  pinMode(PROXIMITY_PIN, INPUT);
 }
 
 void loop() {
@@ -30,12 +26,9 @@ void loop() {
     return;
   }
 
-  bool classroomOccupied = digitalRead(PROXIMITY_PIN) == HIGH;
-
   SensorPacket packet;
   packet.temperature = temperature;
   packet.humidity = humidity;
-  packet.classroomOccupied = classroomOccupied;
   packet.timestamp = millis();
 
   Serial.write((byte*)&packet, sizeof(packet));
