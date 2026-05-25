@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Water's in the Air - Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 1.5rem 2rem; }
+        h1 { font-size: 1.75rem; margin-bottom: 1.5rem; color: #38bdf8; display: flex; align-items: center; gap: 0.75rem; }
+        h1 small { font-size: 0.875rem; font-weight: 400; color: #94a3b8; }
+
+        .tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+        .tab-btn { padding: 0.6rem 1.5rem; border: 1px solid #334155; background: #1e293b; color: #94a3b8; border-radius: 0.5rem; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+        .tab-btn:hover { border-color: #38bdf8; color: #e2e8f0; }
+        .tab-btn.active { background: #38bdf8; color: #0f172a; border-color: #38bdf8; font-weight: 600; }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 2rem; }
+        .card { background: #1e293b; border-radius: 1rem; padding: 1.5rem; border: 1px solid #334155; transition: border-color 0.2s; }
+        .card:hover { border-color: #38bdf8; }
+        .card .label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; margin-bottom: 0.5rem; }
+        .card .value { font-size: 2rem; font-weight: 700; }
+        .card .value.temp { color: #f97316; }
+        .card .value.hum { color: #38bdf8; }
+        .chart-wrap { background: #1e293b; border-radius: 1rem; padding: 1.5rem; border: 1px solid #334155; margin-bottom: 2rem; }
+        .chart-wrap canvas { max-height: 350px; }
+
+        .section { background: #1e293b; border-radius: 1rem; padding: 1.5rem; border: 1px solid #334155; margin-bottom: 1.5rem; }
+        .section-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; color: #e2e8f0; display: flex; align-items: center; gap: 0.5rem; }
+        .section-title .icon { width: 1.25rem; height: 1.25rem; }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+        @media (max-width: 800px) { .grid-2, .grid-4 { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 500px) { .grid-2, .grid-4 { grid-template-columns: 1fr; } }
+
+        .form-group { display: flex; flex-direction: column; gap: 0.3rem; }
+        .form-group label { font-size: 0.8rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.03em; }
+        .form-group input { background: #0f172a; border: 1px solid #334155; color: #e2e8f0; padding: 0.5rem 0.75rem; border-radius: 0.4rem; font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
+        .form-group input:focus { border-color: #38bdf8; }
+        .form-group input::placeholder { color: #475569; }
+        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.7); cursor: pointer; }
+        input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(0.7); cursor: pointer; }
+
+        .btn { padding: 0.5rem 1.25rem; border: none; border-radius: 0.4rem; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.4rem; }
+        .btn-primary { background: #38bdf8; color: #0f172a; }
+        .btn-primary:hover { background: #7dd3fc; }
+        .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-secondary { background: #334155; color: #e2e8f0; }
+        .btn-secondary:hover { background: #475569; }
+        .btn-danger { background: #ef4444; color: #fff; }
+        .btn-danger:hover { background: #f87171; }
+        .btn-sm { padding: 0.35rem 1rem; font-size: 0.8rem; }
+        .btn-success { background: #22c55e; color: #0f172a; }
+        .btn-success:hover { background: #4ade80; }
+
+        .flex-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; }
+
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th { text-align: left; padding: 0.7rem 0.5rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.75rem; border-bottom: 1px solid #334155; }
+        td { padding: 0.5rem; border-bottom: 1px solid #1e293b; white-space: nowrap; }
+        tr:hover td { background: #1a2536; }
+        tr.alert-row td { background: rgba(239, 68, 68, 0.1); }
+        tr.alert-row:hover td { background: rgba(239, 68, 68, 0.18); }
+        td.alert-val { color: #ef4444; font-weight: 600; }
+
+        .badge { display: inline-block; padding: 0.15rem 0.6rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+        .badge-ok { background: #22c55e22; color: #22c55e; border: 1px solid #22c55e44; }
+        .badge-alert { background: #ef444422; color: #ef4444; border: 1px solid #ef444444; }
+
+        .last-update { text-align: right; font-size: 0.8rem; color: #64748b; margin-top: 0.5rem; }
+        .loading { text-align: center; padding: 3rem; color: #64748b; }
+
+        .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .charts-grid .chart-wrap { margin-bottom: 0; }
+        .charts-grid .chart-wrap.full { grid-column: 1 / -1; }
+        @media (max-width: 800px) { .charts-grid { grid-template-columns: 1fr; } }
+
+        .svg-icon { width: 1.25rem; height: 1.25rem; display: inline-block; vertical-align: middle; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+        .empty-state { text-align: center; padding: 3rem 1rem; color: #64748b; }
+        .empty-state .big-icon { font-size: 3rem; margin-bottom: 0.75rem; }
+
+        @media (max-width: 600px) { .container { padding: 1rem; } .card .value { font-size: 1.5rem; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>&#128168; Water's in the Air <small>Monitoraggio Temperatura e Umidit&agrave;</small></h1>
+
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+            <button class="tab-btn" data-tab="analisi">Analisi</button>
+        </div>
+
+        <!-- ====== DASHBOARD TAB ====== -->
+        <div class="tab-content active" id="tab-dashboard">
+            <div class="cards">
+                <div class="card">
+                    <div class="label">Temperatura</div>
+                    <div class="value temp" id="temp">--</div>
+                </div>
+                <div class="card">
+                    <div class="label">Umidit&agrave;</div>
+                    <div class="value hum" id="hum">--</div>
+                </div>
+                <div class="card">
+                    <div class="label">Ultimo aggiornamento</div>
+                    <div class="value" id="lastupdate" style="font-size:0.9rem; font-weight:400;">--</div>
+                </div>
+            </div>
+
+            <div class="chart-wrap">
+                <canvas id="chart"></canvas>
+            </div>
+
+            <div class="section">
+                <div class="flex-between">
+                    <div class="section-title">Cronologia ultime letture</div>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Data</th><th>Temperatura</th><th>Umidit&agrave;</th></tr>
+                        </thead>
+                        <tbody id="table-body-dash"></tbody>
+                    </table>
+                </div>
+                <div class="last-update" id="update-label-dash">In attesa dei dati&hellip;</div>
+            </div>
+        </div>
+
+        <!-- ====== ANALISI TAB ====== -->
+        <div class="tab-content" id="tab-analisi">
+            <div class="flex-between" style="margin-bottom:1rem;">
+                <div class="section-title" style="margin-bottom:0;">Analisi dati storici</div>
+                <div class="flex-row">
+                    <button class="btn btn-success btn-sm" id="btn-export" disabled>Esporta CSV</button>
+                    <button class="btn btn-secondary btn-sm" id="btn-reset-filters">Reset filtri</button>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">
+                    <svg class="svg-icon"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+                    Soglie limite
+                </div>
+                <div class="grid-4">
+                    <div class="form-group">
+                        <label>Temperatura min (&deg;C)</label>
+                        <input type="number" id="limit-temp-min" value="18" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label>Temperatura max (&deg;C)</label>
+                        <input type="number" id="limit-temp-max" value="26" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label>Umidit&agrave; min (%)</label>
+                        <input type="number" id="limit-hum-min" value="40" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label>Umidit&agrave; max (%)</label>
+                        <input type="number" id="limit-hum-max" value="70" step="0.1">
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">
+                    <svg class="svg-icon"><path d="M4 21h16"/><path d="M6 21V9"/><path d="M10 21V3"/><path d="M14 21v-6"/><path d="M18 21V5"/></svg>
+                    Filtri
+                </div>
+                <div class="grid-4">
+                    <div class="form-group">
+                        <label>Data da</label>
+                        <input type="date" id="filter-date-from">
+                    </div>
+                    <div class="form-group">
+                        <label>Data a</label>
+                        <input type="date" id="filter-date-to">
+                    </div>
+                    <div class="form-group">
+                        <label>Ora da</label>
+                        <input type="time" id="filter-time-from">
+                    </div>
+                    <div class="form-group">
+                        <label>Ora a</label>
+                        <input type="time" id="filter-time-to">
+                    </div>
+                    <div class="form-group">
+                        <label>Temp min (&deg;C)</label>
+                        <input type="number" id="filter-temp-min" placeholder="--" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label>Temp max (&deg;C)</label>
+                        <input type="number" id="filter-temp-max" placeholder="--" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label>Umidit&agrave; min (%)</label>
+                        <input type="number" id="filter-hum-min" placeholder="--" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label>Umidit&agrave; max (%)</label>
+                        <input type="number" id="filter-hum-max" placeholder="--" step="0.1">
+                    </div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-wrap">
+                    <canvas id="chart-temp"></canvas>
+                </div>
+                <div class="chart-wrap">
+                    <canvas id="chart-hum"></canvas>
+                </div>
+                <div class="chart-wrap full">
+                    <canvas id="chart-combo"></canvas>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="flex-between">
+                    <div class="section-title">Dati filtrati</div>
+                    <span id="filter-count" style="color:#64748b;font-size:0.85rem;"></span>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Data</th><th>Ora</th><th>Temperatura</th><th>Umidit&agrave;</th><th>Stato</th></tr>
+                        </thead>
+                        <tbody id="table-body-analisi"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let chartDash, chartTemp, chartHum, chartCombo;
+        let allData = [];
+        let latestSnapshot = {};
+
+        function getFilters() {
+            return {
+                dateFrom: document.getElementById('filter-date-from').value,
+                dateTo: document.getElementById('filter-date-to').value,
+                timeFrom: document.getElementById('filter-time-from').value,
+                timeTo: document.getElementById('filter-time-to').value,
+                tempMin: parseFloat(document.getElementById('filter-temp-min').value) || null,
+                tempMax: parseFloat(document.getElementById('filter-temp-max').value) || null,
+                humMin: parseFloat(document.getElementById('filter-hum-min').value) || null,
+                humMax: parseFloat(document.getElementById('filter-hum-max').value) || null,
+            };
+        }
+
+        function getLimits() {
+            return {
+                tempMin: parseFloat(document.getElementById('limit-temp-min').value) || 0,
+                tempMax: parseFloat(document.getElementById('limit-temp-max').value) || 100,
+                humMin: parseFloat(document.getElementById('limit-hum-min').value) || 0,
+                humMax: parseFloat(document.getElementById('limit-hum-max').value) || 100,
+            };
+        }
+
+        function saveLimits() {
+            const l = getLimits();
+            localStorage.setItem('ws_limits', JSON.stringify(l));
+        }
+
+        function loadLimits() {
+            try {
+                const raw = localStorage.getItem('ws_limits');
+                if (raw) {
+                    const l = JSON.parse(raw);
+                    document.getElementById('limit-temp-min').value = l.tempMin ?? 18;
+                    document.getElementById('limit-temp-max').value = l.tempMax ?? 26;
+                    document.getElementById('limit-hum-min').value = l.humMin ?? 40;
+                    document.getElementById('limit-hum-max').value = l.humMax ?? 70;
+                }
+            } catch (e) {}
+        }
+
+        document.querySelectorAll('#tab-analisi input').forEach(el => {
+            el.addEventListener('input', () => { applyFilters(); });
+        });
+
+        document.getElementById('btn-reset-filters').addEventListener('click', () => {
+            document.querySelectorAll('#tab-analisi .form-group input').forEach(el => {
+                if (el.id && el.id.startsWith('filter-')) el.value = '';
+            });
+            applyFilters();
+        });
+
+        document.getElementById('btn-export').addEventListener('click', exportCSV);
+
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const tab = btn.dataset.tab;
+                document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+                document.getElementById('tab-' + tab).classList.add('active');
+                if (tab === 'analisi') {
+                    setTimeout(() => { applyFilters(); }, 50);
+                }
+            });
+        });
+
+        function isOutOfRange(val, min, max) {
+            return val < min || val > max;
+        }
+
+        function applyFilters() {
+            const f = getFilters();
+            const l = getLimits();
+            let filtered = allData.slice();
+
+            if (f.dateFrom) filtered = filtered.filter(d => d.timestamp >= f.dateFrom);
+            if (f.dateTo) filtered = filtered.filter(d => d.timestamp <= f.dateTo + 'T23:59:59');
+
+            filtered = filtered.filter(d => {
+                try { const t = new Date(d.timestamp); return !isNaN(t.getTime()); } catch(e) { return false; }
+            });
+
+            filtered.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+            if (f.timeFrom) {
+                filtered = filtered.filter(d => {
+                    const t = new Date(d.timestamp);
+                    const hh = String(t.getHours()).padStart(2,'0');
+                    const mm = String(t.getMinutes()).padStart(2,'0');
+                    return hh+':'+mm >= f.timeFrom;
+                });
+            }
+            if (f.timeTo) {
+                filtered = filtered.filter(d => {
+                    const t = new Date(d.timestamp);
+                    const hh = String(t.getHours()).padStart(2,'0');
+                    const mm = String(t.getMinutes()).padStart(2,'0');
+                    return hh+':'+mm <= f.timeTo;
+                });
+            }
+            if (f.tempMin !== null) filtered = filtered.filter(d => d.temperature >= f.tempMin);
+            if (f.tempMax !== null) filtered = filtered.filter(d => d.temperature <= f.tempMax);
+            if (f.humMin !== null) filtered = filtered.filter(d => d.humidity >= f.humMin);
+            if (f.humMax !== null) filtered = filtered.filter(d => d.humidity <= f.humMax);
+
+            renderAnalisiTable(filtered, l);
+            renderAnalisiCharts(filtered);
+            document.getElementById('filter-count').textContent = filtered.length + ' campioni';
+            document.getElementById('btn-export').disabled = filtered.length === 0;
+            return filtered;
+        }
+
+        function formatDateTime(iso) {
+            try {
+                return new Date(iso).toLocaleString('it-IT');
+            } catch(e) { return iso; }
+        }
+
+        function formatDate(iso) {
+            try {
+                return new Date(iso).toLocaleDateString('it-IT');
+            } catch(e) { return iso; }
+        }
+
+        function formatTime(iso) {
+            try {
+                const d = new Date(iso);
+                return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+            } catch(e) { return iso; }
+        }
+
+        function renderAnalisiTable(data, limits) {
+            const tbody = document.getElementById('table-body-analisi');
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#64748b;padding:2rem;">Nessun dato corrisponde ai filtri</td></tr>';
+                return;
+            }
+            tbody.innerHTML = data.map(d => {
+                const tempAlert = isOutOfRange(d.temperature, limits.tempMin, limits.tempMax);
+                const humAlert = isOutOfRange(d.humidity, limits.humMin, limits.humMax);
+                const hasAlert = tempAlert || humAlert;
+                const stato = hasAlert
+                    ? '<span class="badge badge-alert">&#9888; Allarme</span>'
+                    : '<span class="badge badge-ok">&#10003; OK</span>';
+                return `<tr class="${hasAlert ? 'alert-row' : ''}">
+                    <td>${formatDate(d.timestamp)}</td>
+                    <td>${formatTime(d.timestamp)}</td>
+                    <td class="${tempAlert ? 'alert-val' : ''}">${d.temperature} °C</td>
+                    <td class="${humAlert ? 'alert-val' : ''}">${d.humidity} %</td>
+                    <td>${stato}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        function renderAnalisiCharts(data) {
+            if (data.length < 2) {
+                ['chart-temp', 'chart-hum', 'chart-combo'].forEach(id => {
+                    const canvas = document.getElementById(id);
+                    if (canvas) {
+                        const parent = canvas.parentElement;
+                        parent.innerHTML = '<div class="loading">Carica almeno 2 campioni per visualizzare i grafici</div>';
+                        const newCanvas = document.createElement('canvas');
+                        newCanvas.id = id;
+                        parent.appendChild(newCanvas);
+                    }
+                });
+                chartTemp = chartHum = chartCombo = null;
+                return;
+            }
+
+            const labels = data.map(d => formatDateTime(d.timestamp));
+            const temps = data.map(d => d.temperature);
+            const hums = data.map(d => d.humidity);
+
+            if (chartTemp) { chartTemp.destroy(); }
+            if (chartHum) { chartHum.destroy(); }
+            if (chartCombo) { chartCombo.destroy(); }
+
+            const commonOpts = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { labels: { color: '#94a3b8' } }
+                },
+                scales: {
+                    x: { ticks: { color: '#64748b', maxTicksLimit: 8 }, grid: { color: '#334155' } },
+                    y: { ticks: { color: '#64748b' }, grid: { color: '#334155' } }
+                }
+            };
+
+            chartTemp = new Chart(document.getElementById('chart-temp'), {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Temperatura (°C)',
+                        data: temps,
+                        borderColor: '#f97316',
+                        backgroundColor: '#f9731622',
+                        tension: 0.3,
+                        fill: true,
+                    }]
+                },
+                options: {
+                    ...commonOpts,
+                    plugins: { ...commonOpts.plugins, title: { display: true, text: 'Temperatura nel tempo', color: '#e2e8f0' } },
+                    scales: {
+                        ...commonOpts.scales,
+                        y: { ...commonOpts.scales.y, title: { display: true, text: '°C', color: '#f97316' } }
+                    }
+                }
+            });
+
+            chartHum = new Chart(document.getElementById('chart-hum'), {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Umidità (%)',
+                        data: hums,
+                        borderColor: '#38bdf8',
+                        backgroundColor: '#38bdf822',
+                        tension: 0.3,
+                        fill: true,
+                    }]
+                },
+                options: {
+                    ...commonOpts,
+                    plugins: { ...commonOpts.plugins, title: { display: true, text: 'Umidità nel tempo', color: '#e2e8f0' } },
+                    scales: {
+                        ...commonOpts.scales,
+                        y: { ...commonOpts.scales.y, title: { display: true, text: '%', color: '#38bdf8' } }
+                    }
+                }
+            });
+
+            chartCombo = new Chart(document.getElementById('chart-combo'), {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: 'Temperatura (°C)',
+                            data: temps,
+                            borderColor: '#f97316',
+                            backgroundColor: '#f9731622',
+                            yAxisID: 'y',
+                            tension: 0.3,
+                            fill: true,
+                        },
+                        {
+                            label: 'Umidità (%)',
+                            data: hums,
+                            borderColor: '#38bdf8',
+                            backgroundColor: '#38bdf822',
+                            yAxisID: 'y1',
+                            tension: 0.3,
+                            fill: true,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { labels: { color: '#94a3b8' } },
+                        title: { display: true, text: 'Temperatura e Umidità combinate', color: '#e2e8f0' }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#64748b', maxTicksLimit: 10 }, grid: { color: '#334155' } },
+                        y: { type: 'linear', display: true, position: 'left', ticks: { color: '#f97316' }, grid: { color: '#334155' }, title: { display: true, text: '°C', color: '#f97316' } },
+                        y1: { type: 'linear', display: true, position: 'right', ticks: { color: '#38bdf8' }, grid: { drawOnChartArea: false }, title: { display: true, text: '%', color: '#38bdf8' } }
+                    }
+                }
+            });
+        }
+
+        function exportCSV() {
+            const f = getFilters();
+            const l = getLimits();
+            let filtered = allData.slice();
+
+            if (f.dateFrom) filtered = filtered.filter(d => d.timestamp >= f.dateFrom);
+            if (f.dateTo) filtered = filtered.filter(d => d.timestamp <= f.dateTo + 'T23:59:59');
+            filtered = filtered.filter(d => { try { return !isNaN(new Date(d.timestamp).getTime()); } catch(e) { return false; } });
+            if (f.timeFrom) {
+                filtered = filtered.filter(d => {
+                    const t = new Date(d.timestamp);
+                    return String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0') >= f.timeFrom;
+                });
+            }
+            if (f.timeTo) {
+                filtered = filtered.filter(d => {
+                    const t = new Date(d.timestamp);
+                    return String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0') <= f.timeTo;
+                });
+            }
+            if (f.tempMin !== null) filtered = filtered.filter(d => d.temperature >= f.tempMin);
+            if (f.tempMax !== null) filtered = filtered.filter(d => d.temperature <= f.tempMax);
+            if (f.humMin !== null) filtered = filtered.filter(d => d.humidity >= f.humMin);
+            if (f.humMax !== null) filtered = filtered.filter(d => d.humidity <= f.humMax);
+
+            if (filtered.length === 0) return;
+
+            const header = 'data,ora,temperatura,umidita';
+            const rows = filtered.map(d => {
+                const dd = formatDate(d.timestamp);
+                const tt = formatTime(d.timestamp);
+                return `${dd},${tt},${d.temperature},${d.humidity}`;
+            });
+            const csv = header + '\n' + rows.join('\n');
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'dati_filtrati.csv';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function initChartDash(labels, temps, hums) {
+            const ctx = document.getElementById('chart').getContext('2d');
+            chartDash = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Temperatura (°C)',
+                            data: temps,
+                            borderColor: '#f97316',
+                            backgroundColor: '#f9731622',
+                            yAxisID: 'y',
+                            tension: 0.3,
+                            fill: true,
+                        },
+                        {
+                            label: 'Umidità (%)',
+                            data: hums,
+                            borderColor: '#38bdf8',
+                            backgroundColor: '#38bdf822',
+                            yAxisID: 'y1',
+                            tension: 0.3,
+                            fill: true,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: { legend: { labels: { color: '#94a3b8' } } },
+                    scales: {
+                        x: { ticks: { color: '#64748b', maxTicksLimit: 10 }, grid: { color: '#334155' } },
+                        y: { type: 'linear', display: true, position: 'left', ticks: { color: '#f97316' }, grid: { color: '#334155' }, title: { display: true, text: '°C', color: '#f97316' } },
+                        y1: { type: 'linear', display: true, position: 'right', ticks: { color: '#38bdf8' }, grid: { drawOnChartArea: false }, title: { display: true, text: '%', color: '#38bdf8' } }
+                    }
+                }
+            });
+        }
+
+        function updateDashboard() {
+            fetch('/api/latest')
+                .then(r => r.json())
+                .then(data => {
+                    latestSnapshot = data;
+                    if (data.temperature !== null) {
+                        document.getElementById('temp').textContent = data.temperature + ' °C';
+                        document.getElementById('hum').textContent = data.humidity + ' %';
+                        document.getElementById('lastupdate').textContent = data.timestamp ? new Date(data.timestamp).toLocaleString('it-IT') : '--';
+                    }
+                })
+                .catch(() => {});
+
+            fetch('/api/data')
+                .then(r => r.json())
+                .then(data => {
+                    allData = data;
+                    const tbody = document.getElementById('table-body-dash');
+                    const recent = data.slice(-20).reverse();
+                    tbody.innerHTML = recent.map(d => {
+                        return `<tr><td>${formatDateTime(d.timestamp)}</td><td>${d.temperature} °C</td><td>${d.humidity} %</td></tr>`;
+                    }).join('');
+                    document.getElementById('update-label-dash').textContent = 'Dati storici: ' + data.length + ' campioni';
+
+                    if (data.length > 1) {
+                        const labels = data.map(d => formatDateTime(d.timestamp));
+                        const temps = data.map(d => d.temperature);
+                        const hums = data.map(d => d.humidity);
+                        if (chartDash) {
+                            chartDash.data.labels = labels;
+                            chartDash.data.datasets[0].data = temps;
+                            chartDash.data.datasets[1].data = hums;
+                            chartDash.update();
+                        } else {
+                            initChartDash(labels, temps, hums);
+                        }
+                    }
+
+                    if (document.getElementById('tab-analisi').classList.contains('active')) {
+                        applyFilters();
+                    }
+                })
+                .catch(() => {});
+        }
+
+        loadLimits();
+        document.querySelectorAll('#tab-analisi input[id^="limit-"]').forEach(el => {
+            el.addEventListener('change', saveLimits);
+        });
+
+        updateDashboard();
+        setInterval(updateDashboard, 10000);
+    </script>
+</body>
+</html>
