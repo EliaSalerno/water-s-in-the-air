@@ -1,0 +1,141 @@
+    1  top
+    2  reset
+    3  ip config
+    4  ifconfig
+    5  ls
+    6  cd ..
+    7  ls
+    8  cd etc/
+    9  ls
+   10  cd wpa_supplicant/
+   11  ls
+   12  cat action_wpa.sh 
+   13  ls
+   14  cd ..
+   15  ls
+   16  cd ..
+   17  ls
+   18  cd ..
+   19  ls
+   20  cd home/
+   21  ls
+   22  cd pi/
+   23  ls
+   24  apt update
+   25  nmcli --version
+   26  nmcli device wifi list
+   27  nmcli device wifi connect "Greppi-5G" password "withProxy"
+   28  nmcli connection show
+   29  ipconfig
+   30  ifconfig
+   31  apk
+   32  apt update
+   33  apt install git
+   34  git
+   35  git
+   36  git
+   37  apt install git
+   38  apt install git
+   39  apt install nano -y
+   40  apt install micro -
+   41  ls
+   42  apt install sudoku
+   43  sudoku
+   44  sudoku
+   45  nano
+   46  micro
+   47  tree
+   48  ls -a
+   49  ssh-keygen
+   50  cat /root/.ssh/id_ed25519.pub 
+   51  git clone https://github.com/EliaSalerno/water-s-in-the-air.git
+   52  sudo raspy-config
+   53  sudo raspi-config
+   54  resetr
+   55  reset
+   56  ls
+   57  cd 
+   58  cd water-s-in-the-air
+   59  ls -l
+   60  ls
+   61  cd ..
+   62  ls
+   63  cd home/pi/water-s-in-the-air/
+   64  ls
+   65  cd repo_dht11_rasp/
+   66  ls
+   67  cd ..
+   68  ls
+   69  cat repo_dht11_rasp/
+   70  ls
+   71  cat README.md 
+   72  python
+   73  cd repo_dht11_rasp/
+   74  pip install -r requirements.txt
+   75  python -m pip install -r requirements.txt
+   76  python -m install pip
+   77  sudo apt install python3-pip
+   78  pip install -r requirements.txt
+   79  python -m pip install -r requirements.txt
+   80  cat requirements.txt 
+   81  python -m pip install flask
+   82  wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-aarch64.sh
+   83  bash Miniforge3-Linux-aarch64.sh 
+   84  conda --version
+   85  source ~/.bashrc
+   86  conda --version
+   87  cat requirements.txt 
+   88  sudo apt-get install libgpiod2
+   89  sudo apt install libgpiod2
+   90  sudo apt-get install libgpiod2
+   91  apt update
+   92  apt upgrade
+   93  sudo apt-get install libgpiod2
+   94  sudo apt install libgpiod2
+   95  sudo apt install libgpiod-dev
+   96  conda --version
+   97  conda env list
+   98  conda create -m env_flask python=3.11 main::flask
+   99  conda create -n env_flask python=3.11 main::flask
+  100  conda env list
+  101  conda activate env_flask
+  102  python
+  103  python
+  104  pip
+  105  pip istall adafruit-circuitpython-dht
+  106  pip install adafruit-circuitpython-dht
+  107  ls requirements.txt 
+  108  cat requirements.txt 
+  109  cat ../README.
+  110  cat ../README.md 
+  111  cat requirements.txt 
+  112  pip install RPi.GPIO
+  113  sudo pip install RPi.GPIO
+  114  pip install RPi.GPIO
+  115  python
+  116  ls
+  117  cat ../README.md 
+  118  python app.py 
+  119  micro app.py 
+  120  python app.py 
+  121  cat ../README.md 
+  122  DHT_SIMULATE=1 python app.py 
+  123  ls
+  124  cd ..
+  125  git status
+  126  git add .
+  127  cd repo_dht11_rasp/
+  128  ls -l
+  129  ls -lh
+  130  cd ..
+  131  git status
+  132  git commit -m "Master: update repo with good file for project"
+  133  git config --global user.name "EliaSalerno"
+  134  git config --global user.email "salel89.do@gmail.com"
+  135  git commit -m "Master: update repo with good file for project"
+  136  git push origin master
+  137  ls
+  138  ls repo_dht11_rasp/
+  139  cd repo_dht11_rasp/
+  140  history
+  141  history > history.txt
